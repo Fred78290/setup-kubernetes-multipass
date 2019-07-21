@@ -194,7 +194,6 @@ if [ "$LAUNCH_IMAGE_URL" == "bionic" ]; then
         "package_update": $PACKAGE_UPGRADE,
         "package_upgrade": $PACKAGE_UPGRADE,
         "runcmd": [
-            "/masterkube/bin/install-kubernetes.sh $KUBERNETES_VERSION $CNI_VERSION",
             "echo '#!/bin/bash' > /usr/local/bin/kubeimage",
             "echo '/usr/local/bin/kubeadm config images pull --kubernetes-version=${KUBERNETES_VERSION}' >> /usr/local/bin/kubeimage",
             "chmod +x /usr/local/bin/kubeimage"
@@ -236,6 +235,10 @@ do
     multipass_mount $PWD/data ${VMNAME}:/data
 
     echo "Prepare ${VMNAME} instance"
+
+    if [ "$OSDISTRO" != "Linux" ]; then
+        multipass exec ${VMNAME} -- sudo /bin/bash -c "/masterkube/bin/install-kubernetes.sh ${KUBERNETES_VERSION} ${CNI_VERSION}"
+    fi
 
     multipass exec ${VMNAME} -- sudo usermod -aG docker multipass
     multipass exec ${VMNAME} -- sudo usermod -aG docker kubernetes
