@@ -21,4 +21,6 @@ find cluster ! -name '*.md' -type f -exec rm -f "{}" "+"
 find config ! -name '*.md' -type f -exec rm -f "{}" "+"
 find kubernetes ! -name '*.md' -type f -exec rm -f "{}" "+"
 
+rm -rf config/deployment
+
 popd

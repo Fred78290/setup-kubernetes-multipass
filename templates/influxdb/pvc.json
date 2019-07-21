@@ -1,0 +1,25 @@
+{
+    "kind": "PersistentVolumeClaim",
+    "apiVersion": "v1",
+    "metadata": {
+        "namespace": "$K8NAMESPACE",
+        "name": "pvc-influxdb"
+    },
+    "spec": {
+        "accessModes": [
+            "ReadWriteOnce"
+        ],
+        "volumeMode": "Filesystem",
+        "resources": {
+            "requests": {
+                "storage": "1Gi"
+            }
+        },
+        "storageClassName": "local-storage",
+        "selector": {
+            "matchLabels": {
+                "name": "pv-influxdb"
+            }
+        }
+    }
+}

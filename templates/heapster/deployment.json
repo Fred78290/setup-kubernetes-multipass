@@ -1,0 +1,42 @@
+{
+    "apiVersion": "apps/v1",
+    "kind": "Deployment",
+    "metadata": {
+        "name": "heapster",
+        "namespace": "$K8NAMESPACE"
+    },
+    "spec": {
+        "replicas": 1,
+        "selector": {
+            "matchLabels": {
+                "k8s-app": "heapster"
+            }
+        },
+        "template": {
+            "metadata": {
+                "labels": {
+                    "task": "monitoring",
+                    "k8s-app": "heapster"
+                }
+            },
+            "spec": {
+                "nodeSelector": {
+                    "master": "true"
+                },
+                "serviceAccountName": "heapster",
+                "containers": [
+                    {
+                        "name": "heapster",
+                        "image": "k8s.gcr.io/heapster-amd64:v1.6.0-beta.1",
+                        "imagePullPolicy": "IfNotPresent",
+                        "command": [
+                            "/heapster",
+                            "--source=kubernetes:https://kubernetes.default",
+                            "--sink=influxdb:http://influxdb:8086"
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

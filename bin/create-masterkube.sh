@@ -90,6 +90,17 @@ while true; do
 	esac
 done
 
+function multipass_mount {
+    echo -n "Mount point $1 to $2"
+while :
+do
+	echo -n "."
+	multipass mount $1 $2 > /dev/null 2>&1 && break
+	sleep 1
+done
+    echo
+}
+
 KUBERNETES_USER=$(cat <<EOF
 [
     {
@@ -218,10 +229,11 @@ do
         multipass start ${VMNAME}
     fi
 
-    multipass mount $PWD/bin ${VMNAME}:/masterkube/bin
-    multipass mount $PWD/templates ${VMNAME}:/masterkube/templates
-    multipass mount $PWD/etc ${VMNAME}:/masterkube/etc
-    multipass mount $PWD/cluster ${VMNAME}:/etc/cluster
+    multipass_mount $PWD/bin ${VMNAME}:/masterkube/bin
+    multipass_mount $PWD/templates ${VMNAME}:/masterkube/templates
+    multipass_mount $PWD/etc ${VMNAME}:/masterkube/etc
+    multipass_mount $PWD/cluster ${VMNAME}:/etc/cluster
+    multipass_mount $PWD/data ${VMNAME}:/data
 
     echo "Prepare ${VMNAME} instance"
 
@@ -229,10 +241,10 @@ do
     multipass exec ${VMNAME} -- sudo usermod -aG docker kubernetes
     multipass exec ${VMNAME} -- sudo /bin/bash -c /usr/local/bin/kubeimage
 
-    echo "Start kubernetes ${VMNAME} instance master node"
-
     if [ $INDEX -eq 0 ]; then
-        multipass mount $PWD/kubernetes ${VMNAME}:/etc/kubernetes
+        echo "Start kubernetes ${VMNAME} instance master node"
+    
+        multipass_mount $PWD/kubernetes ${VMNAME}:/etc/kubernetes
 
         multipass exec ${VMNAME} -- sudo /masterkube/bin/create-cluster.sh flannel ${KUBERNETES_VERSION}
 
@@ -245,6 +257,8 @@ do
 
         HOSTS_DEF=$(multipass info ${VMNAME} | grep IPv4 | awk "{print \$2 \"    ${VMNAME}.$DOMAIN_NAME ${VMNAME}-dashboard.$DOMAIN_NAME\"}")
     else
+        echo "Start kubernetes ${VMNAME} instance worker node"
+    
         multipass exec ${VMNAME} -- sudo /masterkube/bin/join-master.sh
         HOSTS_DEF=$(multipass info ${VMNAME} | grep IPv4 | awk "{print \$2 \"    ${VMNAME}.$DOMAIN_NAME\"}")
     fi
@@ -263,6 +277,8 @@ done
 
 ./bin/create-ingress-controller.sh
 ./bin/create-dashboard.sh
+./bin/create-influxdb.sh
+./bin/create-heapster.sh
 ./bin/create-helloworld.sh
 
 popd

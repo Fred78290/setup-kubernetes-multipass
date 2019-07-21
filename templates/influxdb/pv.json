@@ -1,0 +1,25 @@
+{
+    "apiVersion": "v1",
+    "kind": "PersistentVolume",
+    "metadata": {
+        "namespace": "$K8NAMESPACE",
+        "name": "pv-influxdb",
+        "labels": {
+            "name": "pv-influxdb"
+        }
+    },
+    "spec": {
+        "capacity": {
+            "storage": "5Gi"
+        },
+        "volumeMode": "Filesystem",
+        "accessModes": [
+            "ReadWriteOnce"
+        ],
+        "persistentVolumeReclaimPolicy": "Recycle",
+        "storageClassName": "local-storage",
+        "hostPath": {
+            "path": "/data/influxdb"
+        }
+    }
+}

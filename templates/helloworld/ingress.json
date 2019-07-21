@@ -29,7 +29,7 @@
                             "path": "/*",
                             "backend": {
                                 "serviceName": "helloworld",
-                                "servicePort": 443
+                                "servicePort": 8080
                             }
                         }
                     ]

@@ -1,0 +1,109 @@
+{
+    "apiVersion": "apps/v1",
+    "kind": "Deployment",
+    "metadata": {
+        "name": "influxdb",
+        "namespace": "$K8NAMESPACE",
+        "labels": {
+            "app": "influxdb"
+        }
+    },
+    "spec": {
+        "replicas": 1,
+        "selector": {
+            "matchLabels": {
+                "app": "influxdb"
+            }
+        },
+        "template": {
+            "metadata": {
+                "labels": {
+                    "app": "influxdb"
+                }
+            },
+            "spec": {
+                "nodeSelector": {
+                    "master": "true"
+                },
+                "restartPolicy": "Always",
+                "terminationGracePeriodSeconds": 30,
+                "dnsPolicy": "ClusterFirstWithHostNet",
+                "securityContext": {},
+                "schedulerName": "default-scheduler",
+                "containers": [
+                    {
+                        "name": "influxdb",
+                        "image": "influxdb",
+                        "imagePullPolicy": "IfNotPresent",
+                        "volumeMounts": [
+                            {
+                                "name": "data",
+                                "mountPath": "/var/lib/influxdb"
+                            }
+                        ],
+                        "ports": [
+                            {
+                                "containerPort": 8086,
+                                "name": "influxdb"
+                            }
+                        ],
+                        "livenessProbe": {
+                            "httpGet": {
+                                "path": "/ping",
+                                "port": 8086,
+                                "scheme": "HTTP"
+                            },
+                            "initialDelaySeconds": 60,
+                            "periodSeconds": 30,
+                            "timeoutSeconds": 5
+                        },
+                        "readinessProbe": {
+                            "httpGet": {
+                                "path": "/ping",
+                                "port": 8086,
+                                "scheme": "HTTP"
+                            },
+                            "initialDelaySeconds": 30,
+                            "failureThreshold": 5,
+                            "periodSeconds": 15,
+                            "timeoutSeconds": 5
+                        },
+                        "env": [
+                            {
+                                "name": "POD_NAME",
+                                "valueFrom": {
+                                    "fieldRef": {
+                                        "fieldPath": "metadata.name"
+                                    }
+                                }
+                            },
+                            {
+                                "name": "POD_NAMESPACE",
+                                "valueFrom": {
+                                    "fieldRef": {
+                                        "fieldPath": "metadata.namespace"
+                                    }
+                                }
+                            }
+                        ],
+                        "envFrom": [
+                            {
+                                "configMapRef": {
+                                    "name": "config-influxdb"
+                                }
+                            }
+                        ]
+                    }
+                ],
+                "volumes": [
+                    {
+                        "name": "data",
+                        "persistentVolumeClaim": {
+                            "claimName": "pvc-influxdb"
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}
