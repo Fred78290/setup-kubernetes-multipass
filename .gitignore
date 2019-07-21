@@ -1,2 +1,6 @@
 
 etc
+cluster/
+config/
+data/
+kubernetes/
