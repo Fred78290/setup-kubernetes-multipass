@@ -76,7 +76,7 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get update
 apt-get upgrade -y
 apt-get dist-upgrade -y
-apt-get install jq socat -y
+apt-get install jq socat nfs-common -y
 
 apt-get autoremove -y
 

@@ -90,6 +90,11 @@ while true; do
 	esac
 done
 
+# Force update/upgrade
+if [ "$OSDISTRO" != "Linux" ]; then
+    PACKAGE_UPGRADE=true
+fi
+
 function multipass_mount {
     echo -n "Mount point $1 to $2"
 while :
@@ -191,8 +196,13 @@ if [ "$LAUNCH_IMAGE_URL" == "bionic" ]; then
 
     cat <<EOF | tee ./config/cloud-init-master.json | python2 -c "import json,sys,yaml; print yaml.safe_dump(json.load(sys.stdin), width=500, indent=4, default_flow_style=False)" >./config/cloud-init-master.yaml
     {
-        "package_update": $PACKAGE_UPGRADE,
-        "package_upgrade": $PACKAGE_UPGRADE,
+        "package_update": ${PACKAGE_UPGRADE},
+        "package_upgrade": ${PACKAGE_UPGRADE},
+        "packages": [
+            "jq",
+            "socat",
+            "nfs-common"
+        ],
         "runcmd": [
             "echo '#!/bin/bash' > /usr/local/bin/kubeimage",
             "echo '/usr/local/bin/kubeadm config images pull --kubernetes-version=${KUBERNETES_VERSION}' >> /usr/local/bin/kubeimage",
@@ -278,6 +288,7 @@ done
 
 ./bin/kubeconfig-merge.sh master-${CLUSTER_NAME} cluster/config
 
+./bin/create-nfs-provisioner.sh
 ./bin/create-ingress-controller.sh
 ./bin/create-dashboard.sh
 ./bin/create-influxdb.sh
