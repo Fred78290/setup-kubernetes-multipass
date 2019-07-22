@@ -19,7 +19,7 @@
         "persistentVolumeReclaimPolicy": "Recycle",
         "storageClassName": "local-storage",
         "hostPath": {
-            "path": "/data/influxdb"
+            "path": "/data"
         }
     }
 }

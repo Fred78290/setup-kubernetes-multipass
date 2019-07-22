@@ -38,6 +38,7 @@
                         "volumeMounts": [
                             {
                                 "name": "data",
+                                "subPath": "influxdb",
                                 "mountPath": "/var/lib/influxdb"
                             }
                         ],
