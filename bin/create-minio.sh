@@ -9,6 +9,7 @@ export KUBERNETES_TEMPLATE=./templates/minio
 
 export MINIO_ACCESS_KEY=${CLUSTER_NAME}-minio
 export MINIO_SECRET_KEY=$KUBERNETES_PASSWORD
+export MINIO_REPLICAS=$((MAXTOTALNODES+1))
 
 mkdir -p $ETC_DIR
 
@@ -23,6 +24,8 @@ kubectl apply -f $ETC_DIR/$1.json --kubeconfig=./cluster/config
 
 if [ $MAXTOTALNODES -gt 2 ]; then
     SERVER_ARGS='{ "args": [ "server" ] }'
+
+    echo "Setup minio distributed server with ${MINIO_REPLICAS} replicas"
 
     for INDEX in $(seq 0 $MAXTOTALNODES)
     do
@@ -42,12 +45,16 @@ if [ $MAXTOTALNODES -gt 2 ]; then
 
     cat $KUBERNETES_TEMPLATE/statefulset.json | jq \
         --argjson SERVER_ARGS "$SERVER_ARGS" \
-        '.spec.template.spec.containers[0].args += $SERVER_ARGS' \
+        --argjson MINIO_REPLICAS "$MINIO_REPLICAS" \
+        '.spec.replicas = $MINIO_REPLICAS
+        | .spec.template.spec.containers[0].args += $SERVER_ARGS' \
         > $KUBERNETES_TEMPLATE/deployment.json
 
     deploy deployment
     deploy headless
 else
+    echo "Setup minio standalone server"
+
     deploy alone
     deploy service
 fi
