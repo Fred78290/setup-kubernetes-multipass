@@ -289,6 +289,7 @@ done
 ./bin/kubeconfig-merge.sh master-${CLUSTER_NAME} cluster/config
 
 ./bin/create-nfs-provisioner.sh
+./bin/create-minio.sh
 ./bin/create-ingress-controller.sh
 ./bin/create-dashboard.sh
 ./bin/create-influxdb.sh

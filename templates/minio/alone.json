@@ -1,0 +1,81 @@
+{
+    "apiVersion": "extensions/v1beta1",
+    "kind": "Deployment",
+    "metadata": {
+        "namespace": "$K8NAMESPACE",
+        "name": "minio",
+        "labels": {
+            "app": "minio"
+        }
+    },
+    "spec": {
+        "strategy": {
+            "type": "Recreate"
+        },
+        "template": {
+            "metadata": {
+                "labels": {
+                    "app": "minio"
+                }
+            },
+            "spec": {
+                "volumes": [
+                    {
+                        "name": "data",
+                        "hostPath": {
+                            "path": "/data"
+                        }
+                    }
+                ],
+                "containers": [
+                    {
+                        "name": "minio",
+                        "volumeMounts": [
+                            {
+                                "name": "data",
+                                "mountPath": "/data",
+                                "subPath": "minio"
+                            }
+                        ],
+                        "image": "minio/minio",
+                        "args": [
+                            "server",
+                            "/data"
+                        ],
+                        "env": [
+                            {
+                                "name": "MINIO_ACCESS_KEY",
+                                "value": "$MINIO_ACCESS_KEY"
+                            },
+                            {
+                                "name": "MINIO_SECRET_KEY",
+                                "value": "$MINIO_SECRET_KEY"
+                            }
+                        ],
+                        "ports": [
+                            {
+                                "containerPort": 9000
+                            }
+                        ],
+                        "readinessProbe": {
+                            "httpGet": {
+                                "path": "/minio/health/ready",
+                                "port": 9000
+                            },
+                            "initialDelaySeconds": 120,
+                            "periodSeconds": 20
+                        },
+                        "livenessProbe": {
+                            "httpGet": {
+                                "path": "/minio/health/live",
+                                "port": 9000
+                            },
+                            "initialDelaySeconds": 120,
+                            "periodSeconds": 20
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}
