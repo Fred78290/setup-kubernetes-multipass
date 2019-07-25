@@ -22,6 +22,8 @@ export CNI_VERSION="v0.7.5"
 export MAXTOTALNODES=3
 export OSDISTRO=$(uname -s)
 export PACKAGE_UPGRADE="false"
+export VLAN_BASE_ADDRESS=10.254.253
+export VLAN_BASE_MASK=24
 
 TEMP=$(getopt -o c:d:m:n: --long upgrade,disk:,cpus:,memory:,name:,no-custom-image,image:,ssh-key:,cni-version:,password:,kubernetes-version:,max-nodes-total: -n "$0" -- "$@")
 
@@ -250,9 +252,12 @@ do
         multipass exec ${VMNAME} -- sudo /bin/bash -c "/masterkube/bin/install-kubernetes.sh ${KUBERNETES_VERSION} ${CNI_VERSION}"
     fi
 
+    VLANADDRESS=${VLAN_BASE_ADDRESS}.$((${INDEX}+100))/${VLAN_BASE_MASK}
+
     multipass exec ${VMNAME} -- sudo usermod -aG docker multipass
     multipass exec ${VMNAME} -- sudo usermod -aG docker kubernetes
     multipass exec ${VMNAME} -- sudo /bin/bash -c /usr/local/bin/kubeimage
+    multipass exec ${VMNAME} -- sudo /masterkube/bin/create-vlan.sh "${VLANADDRESS}"
 
     if [ $INDEX -eq 0 ]; then
         echo "Start kubernetes ${VMNAME} instance master node"
@@ -268,7 +273,7 @@ do
         kubectl label nodes ${VMNAME} master=true --overwrite --kubeconfig=./cluster/config
         kubectl create secret tls kube-system -n kube-system --key ./etc/ssl/privkey.pem --cert ./etc/ssl/fullchain.pem --kubeconfig=./cluster/config
 
-        HOSTS_DEF=$(multipass info ${VMNAME} | grep IPv4 | awk "{print \$2 \"    ${VMNAME}.$DOMAIN_NAME ${VMNAME}-dashboard.$DOMAIN_NAME\"}")
+        HOSTS_DEF=$(multipass info ${VMNAME} | grep IPv4 | awk "{print \$2 \"    ${VMNAME}.$DOMAIN_NAME ${VMNAME}-minio.$DOMAIN_NAME ${VMNAME}.$DOMAIN_NAME ${VMNAME}-dashboard.$DOMAIN_NAME\"}")
     else
         echo "Start kubernetes ${VMNAME} instance worker node"
     
