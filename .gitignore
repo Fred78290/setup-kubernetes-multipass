@@ -4,3 +4,7 @@ cluster/
 config/
 data/
 kubernetes/
+
+templates/minio/deployment\.json
+
+templates/minio/daemonset/deployment\.json
