@@ -1,6 +1,6 @@
 {
     "apiVersion": "apps/v1",
-    "kind": "StatefulSet",
+    "kind": "DaemonSet",
     "metadata": {
         "namespace": "$K8NAMESPACE",
         "name": "minio",
@@ -9,7 +9,6 @@
         }
     },
     "spec": {
-        "serviceName": "minio",
         "selector": {
             "matchLabels": {
                 "app": "minio"

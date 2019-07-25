@@ -9,7 +9,6 @@
         }
     },
     "spec": {
-        "clusterIP": "None",
         "ports": [
             {
                 "port": 9000,
