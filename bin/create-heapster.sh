@@ -1,4 +1,6 @@
 #!/bin/bash
+echo "Deploy Heapster"
+
 CURDIR=$(dirname $0)
 
 pushd $CURDIR/../

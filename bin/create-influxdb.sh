@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "Deploy Influxdb"
+
 CURDIR=$(dirname $0)
 
 pushd $CURDIR/../

@@ -1,4 +1,6 @@
 #!/bin/bash
+echo "Deploy Minio"
+
 CURDIR=$(dirname $0)
 
 pushd $CURDIR/../

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "Deploy kubernetes dashboard"
+
 # This file is intent to deploy dashboard inside the masterkube
 CURDIR=$(dirname $0)
 

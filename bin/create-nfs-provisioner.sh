@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "Create NFS Provisioner"
+
 CURDIR=$(dirname $0)
 
 pushd $CURDIR/../

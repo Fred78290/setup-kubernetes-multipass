@@ -1,4 +1,6 @@
 #!/bin/bash
+echo "Deploy Helloworld"
+
 CURDIR=$(dirname $0)
 
 pushd $CURDIR/../

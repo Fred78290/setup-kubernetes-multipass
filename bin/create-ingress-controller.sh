@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "Create Ingress Controller"
+
 CURDIR=$(dirname $0)
 
 pushd $CURDIR/../

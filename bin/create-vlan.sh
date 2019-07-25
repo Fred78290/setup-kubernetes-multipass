@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "Create vlan0"
+
 LINK=$(ip route get 1|awk '{print $5;exit}')
 
 echo "Create vlan with address:$1"
