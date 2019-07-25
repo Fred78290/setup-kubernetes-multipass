@@ -221,8 +221,25 @@ if [ "$LAUNCH_IMAGE_URL" == "bionic" ]; then
 EOF
 fi
 
+cat > cluster/hosts.tmpl <<EOF
+
+#VM in initial cluster on vlan0
+EOF
+
 for INDEX in $(seq 0 $MAXTOTALNODES)
 do
+    if [ $INDEX -eq 0 ]; then
+	    VMNAME="master-${CLUSTER_NAME}"
+    else
+	    VMNAME="worker-${CLUSTER_NAME}-$INDEX"
+    fi
+
+    echo "${VLAN_BASE_ADDRESS}.$(($INDEX+100))  ${VMNAME} ${VMNAME}.$DOMAIN_NAME" >> cluster/hosts.tmpl
+done
+
+for INDEX in $(seq 0 $MAXTOTALNODES)
+do
+    VLANADDRESS=${VLAN_BASE_ADDRESS}.$((${INDEX}+100))/${VLAN_BASE_MASK}
 
     if [ $INDEX -eq 0 ]; then
 	    VMNAME="master-${CLUSTER_NAME}"
@@ -248,16 +265,18 @@ do
 
     echo "Prepare ${VMNAME} instance"
 
+    multipass exec ${VMNAME} -- sudo /masterkube/bin/create-vlan.sh "${VLANADDRESS}"
+    multipass exec ${VMNAME} -- sudo /bin/bash -c "cat /etc/cluster/hosts.tmpl >> /etc/hosts"
+    multipass exec ${VMNAME} -- sudo /bin/bash -c "cat /etc/cluster/hosts.tmpl >> /etc/cloud/templates/hosts.debian.tmpl"
+
     if [ "$OSDISTRO" != "Linux" ]; then
         multipass exec ${VMNAME} -- sudo /bin/bash -c "/masterkube/bin/install-kubernetes.sh ${KUBERNETES_VERSION} ${CNI_VERSION}"
+    else
+        multipass exec ${VMNAME} -- sudo /bin/bash -c /usr/local/bin/kubeimage
     fi
-
-    VLANADDRESS=${VLAN_BASE_ADDRESS}.$((${INDEX}+100))/${VLAN_BASE_MASK}
 
     multipass exec ${VMNAME} -- sudo usermod -aG docker multipass
     multipass exec ${VMNAME} -- sudo usermod -aG docker kubernetes
-    multipass exec ${VMNAME} -- sudo /bin/bash -c /usr/local/bin/kubeimage
-    multipass exec ${VMNAME} -- sudo /masterkube/bin/create-vlan.sh "${VLANADDRESS}"
 
     if [ $INDEX -eq 0 ]; then
         echo "Start kubernetes ${VMNAME} instance master node"
