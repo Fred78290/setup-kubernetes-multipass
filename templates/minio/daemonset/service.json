@@ -3,7 +3,7 @@
     "kind": "Service",
     "metadata": {
         "namespace": "$K8NAMESPACE",
-        "name": "minio",
+        "name": "minio-service",
         "labels": {
             "app": "minio"
         }

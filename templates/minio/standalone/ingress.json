@@ -28,7 +28,7 @@
                         {
                             "path": "/*",
                             "backend": {
-                                "serviceName": "minio",
+                                "serviceName": "minio-service",
                                 "servicePort": 9000
                             }
                         }
