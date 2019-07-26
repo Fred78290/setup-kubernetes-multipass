@@ -77,4 +77,14 @@ kubectl apply -f $ETC_DIR/$1.json --kubeconfig=./cluster/config
 deploy deployment
 deploy service
 
-[ -e "${MINIO_SERVER_TYPE}/ingress.json" ] && deploy ingress
+if [ -f "${KUBERNETES_TEMPLATE}/${MINIO_SERVER_TYPE}/headless.json" ]; then
+    deploy headless
+fi
+
+if [ -f "${KUBERNETES_TEMPLATE}/${MINIO_SERVER_TYPE}/ingress.json" ]; then
+    deploy ingress
+fi
+
+if [ $MINIO_SERVER_TYPE != "standalone" ]; then
+    rm "${KUBERNETES_TEMPLATE}/${MINIO_SERVER_TYPE}/deployment.json"
+fi
