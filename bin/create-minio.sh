@@ -33,7 +33,7 @@ if [ $MAXTOTALNODES -gt 2 ]; then
         if [ $MINIO_SERVER_TYPE == "statefulset" ]; then
             MINIO_SERVER="http://minio-${INDEX}.minio.${K8NAMESPACE}.svc.cluster.local:9000/data/minio"
         else
-            MINIO_SERVER="http://${VMNAME}.$(($INDEX+100)):9000/data/minio"
+            MINIO_SERVER="http://${VMNAME}:9000/data/minio"
         fi
 
         SERVER_ARGS=$(echo $SERVER_ARGS | jq --arg MINIO_SERVER "${MINIO_SERVER}" '.args[.args | length] |= . + $MINIO_SERVER')
