@@ -13,9 +13,12 @@ export MINIO_ACCESS_KEY=${CLUSTER_NAME}-minio
 export MINIO_SECRET_KEY=$KUBERNETES_PASSWORD
 export MINIO_REPLICAS=$((MAXTOTALNODES+1))
 export MINIO_SERVER_TYPE=statefulset
+export SUBPATH_POD_NAME='$(POD_NAME)'
 
 [ -z "$VLAN_BASE_ADDRESS" ] && export VLAN_BASE_ADDRESS=10.254.253
 [ -z "$VLAN_BASE_MASK" ] && export VLAN_BASE_MASK=24
+
+mkdir ./data/minio
 
 if [ $MAXTOTALNODES -gt 2 ]; then
     SERVER_ARGS='{ "args": [ "server" ] }'

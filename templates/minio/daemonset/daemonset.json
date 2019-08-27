@@ -44,6 +44,14 @@
                             {
                                 "name": "MINIO_SECRET_KEY",
                                 "value": "$MINIO_SECRET_KEY"
+                            },
+                            {
+                                "name": "POD_NAME",
+                                "valueFrom": {
+                                    "fieldRef": {
+                                        "fieldPath": "metadata.name"
+                                    }
+                                }
                             }
                         ],
                         "image": "minio/minio:RELEASE.2019-07-24T02-02-23Z",

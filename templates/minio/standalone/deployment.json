@@ -50,6 +50,14 @@
                             {
                                 "name": "MINIO_SECRET_KEY",
                                 "value": "$MINIO_SECRET_KEY"
+                            },
+                            {
+                                "name": "POD_NAME",
+                                "valueFrom": {
+                                    "fieldRef": {
+                                        "fieldPath": "metadata.name"
+                                    }
+                                }
                             }
                         ],
                         "ports": [
