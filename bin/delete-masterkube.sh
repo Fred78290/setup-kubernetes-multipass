@@ -31,6 +31,8 @@ done
 find cluster ! -name '*.md' -type f -exec rm -f "{}" "+"
 find config ! -name '*.md' -type f -exec rm -f "{}" "+"
 find kubernetes ! -name '*.md' -type f -exec rm -f "{}" "+"
+find data ! -name '*.md' -type f -exec rm -f "{}" "+"
+find data/* -maxdepth 1 -type d -exec rm -rf "{}" "+"
 
 rm -rf config/deployment
 
