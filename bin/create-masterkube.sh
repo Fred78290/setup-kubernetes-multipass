@@ -292,7 +292,7 @@ do
         kubectl label nodes ${VMNAME} master=true --overwrite --kubeconfig=./cluster/config
         kubectl create secret tls kube-system -n kube-system --key ./etc/ssl/privkey.pem --cert ./etc/ssl/fullchain.pem --kubeconfig=./cluster/config
 
-        HOSTS_DEF=$(multipass info ${VMNAME} | grep IPv4 | awk "{print \$2 \"    ${VMNAME}.$DOMAIN_NAME ${VMNAME}-minio.$DOMAIN_NAME ${VMNAME}.$DOMAIN_NAME ${VMNAME}-dashboard.$DOMAIN_NAME\"}")
+        HOSTS_DEF=$(multipass info ${VMNAME} | grep IPv4 | awk "{print \$2 \"    ${VMNAME}.$DOMAIN_NAME ${VMNAME}-minio.$DOMAIN_NAME ${VMNAME}.$DOMAIN_NAME ${VMNAME}-minio.$DOMAIN_NAME ${VMNAME}-dashboard.$DOMAIN_NAME\"}")
     else
         echo "Start kubernetes ${VMNAME} instance worker node"
     
