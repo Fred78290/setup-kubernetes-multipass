@@ -2,6 +2,10 @@
 CURDIR=$(dirname $0)
 CLUSTER_NAME=$1
 
+if [ -z "$CLUSTER_NAME" ]; then
+    CLUSTER_NAME="$(hostname | tr '[:upper:]' '[:lower:]')"
+fi
+
 echo "Delete master-${CLUSTER_NAME} previous instance"
 
 pushd $CURDIR/../

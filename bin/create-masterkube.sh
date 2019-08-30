@@ -9,7 +9,7 @@ set -e
 CURDIR=$(dirname $0)
 
 export CUSTOM_IMAGE=YES
-export CLUSTER_NAME="kube"
+export CLUSTER_NAME="$(hostname | tr '[:upper:]' '[:lower:]')"
 export CPUS="4"
 export MEMORY="4G"
 export DISK="10G"
