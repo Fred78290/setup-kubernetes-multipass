@@ -24,6 +24,12 @@ do
     fi
 
     multipass delete $VMNAME -p &> /dev/null
+
+    if [ "$OSDISTRO" == "Linux" ]; then
+        sudo sed -i "/${VMNAME}/d" /etc/hosts
+    else
+        sudo sed -i '' "/${VMNAME}/d" /etc/hosts
+    fi
 done
 
 ./bin/kubeconfig-delete.sh master-${CLUSTER_NAME} &> /dev/null
