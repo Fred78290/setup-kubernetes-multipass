@@ -77,6 +77,14 @@ EOF") | jq . > $ETC_DIR/$1.json
 kubectl apply -f $ETC_DIR/$1.json --kubeconfig=./cluster/config
 }
 
+if [ -f "${KUBERNETES_TEMPLATE}/${MINIO_SERVER_TYPE}/pv.json" ]; then
+    deploy pv
+fi
+
+if [ -f "${KUBERNETES_TEMPLATE}/${MINIO_SERVER_TYPE}/pvc.json" ]; then
+    deploy pvc
+fi
+
 deploy deployment
 deploy service
 
