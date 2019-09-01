@@ -1,0 +1,65 @@
+{
+    "apiVersion": "extensions/v1beta1",
+    "kind": "Deployment",
+    "metadata": {
+        "name": "metrics-server",
+        "namespace": "$K8NAMESPACE",
+        "labels": {
+            "k8s-app": "metrics-server"
+        }
+    },
+    "spec": {
+        "selector": {
+            "matchLabels": {
+                "k8s-app": "metrics-server"
+            }
+        },
+        "template": {
+            "metadata": {
+                "name": "metrics-server",
+                "labels": {
+                    "k8s-app": "metrics-server"
+                }
+            },
+            "spec": {
+                "serviceAccountName": "metrics-server",
+                "volumes": [
+					{
+						"name": "kubelet",
+						"hostPath": {
+							"path": "/var/lib/kubelet/pki/"
+						}
+					},
+                    {
+                        "name": "tmp-dir",
+                        "emptyDir": {}
+                    }
+                ],
+                "containers": [
+                    {
+                        "name": "metrics-server",
+                        "image": "k8s.gcr.io/metrics-server-amd64:v0.3.3",
+                        "imagePullPolicy": "Always",
+						"args": [
+							"--tls-cert-file=/etc/kubelet/kubelet.crt",
+							"--tls-private-key-file=/etc/kubelet/kubelet.key",
+							"--kubelet-insecure-tls",
+                            "--metric-resolution=30s",
+                            "--kubelet-preferred-address-types=InternalIP,Hostname,ExternalIP"
+						],
+                        "volumeMounts": [
+                            {
+                                "name": "tmp-dir",
+                                "mountPath": "/tmp"
+                            },
+							{
+								"name": "kubelet",
+								"mountPath": "/etc/kubelet"
+							}
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}
