@@ -23,7 +23,7 @@
                     {
                         "name": "data",
                         "hostPath": {
-                            "path": "/data"
+                            "path": "/"
                         }
                     }
                 ],

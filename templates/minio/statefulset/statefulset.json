@@ -28,8 +28,8 @@
                 "volumes": [
                     {
                         "name": "storage",
-                        "hostPath": {
-                            "path": "/data/minio"
+                        "persistentVolumeClaim": {
+                            "claimName": "pvc-minio"
                         }
                     }
                 ],
