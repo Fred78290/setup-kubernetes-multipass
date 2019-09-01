@@ -23,13 +23,11 @@
                 }
             },
             "spec": {
-                "nodeSelector": {
-                    "master": "true"
-                },
                 "containers": [
                     {
                         "name": "kubernetes-dashboard",
-                        "image": "k8s.gcr.io/kubernetes-dashboard-amd64:v1.10.1",
+                        "image": "kubernetesui/dashboard:v2.0.0-beta4",
+                        "imagePullPolicy": "Always",
                         "ports": [
                             {
                                 "containerPort": 8443,
@@ -37,7 +35,8 @@
                             }
                         ],
                         "args": [
-                            "--auto-generate-certificates"
+                            "--auto-generate-certificates",
+                            "--namespace=$K8NAMESPACE"
                         ],
                         "volumeMounts": [
                             {
