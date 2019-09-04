@@ -2,7 +2,7 @@
     "apiVersion": "v1",
     "kind": "Service",
     "metadata": {
-        "name": "masterkube-ingress-nginx",
+        "name": "ingress-nginx",
         "namespace": "$K8NAMESPACE"
     },
     "spec": {
@@ -24,7 +24,7 @@
             }
         ],
         "selector": {
-            "app": "masterkube-ingress-nginx"
+            "app": "ingress-nginx"
         }
     }
 }
