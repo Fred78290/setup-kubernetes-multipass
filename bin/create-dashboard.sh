@@ -10,6 +10,8 @@ pushd $CURDIR/../
 export K8NAMESPACE=kubernetes-dashboard
 export ETC_DIR=./config/deployment/dashboard
 export KUBERNETES_TEMPLATE=./templates/dashboard
+export SUBPATH_POD_NAME='$(POD_NAME)'
+export REWRITE_TARGET='/$1'
 
 if [ -z "$DOMAIN_NAME" ]; then
     export DOMAIN_NAME=$(openssl x509 -noout -subject -in ./etc/ssl/cert.pem | awk -F= '{print $NF}' | sed -e 's/^[ \t]*//' | sed 's/\*\.//g')
