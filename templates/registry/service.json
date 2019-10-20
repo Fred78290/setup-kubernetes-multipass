@@ -1,0 +1,22 @@
+{
+    "kind": "Service",
+    "apiVersion": "v1",
+    "metadata": {
+        "labels": {
+            "app": "registry"
+        },
+        "name": "$REGISTRY_NAME",
+        "namespace": "$K8NAMESPACE"
+    },
+    "spec": {
+        "ports": [
+            {
+                "port": 5000,
+                "targetPort": 5000
+            }
+        ],
+        "selector": {
+            "app": "registry"
+        }
+    }
+}

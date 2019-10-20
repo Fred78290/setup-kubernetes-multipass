@@ -1,0 +1,25 @@
+{
+    "apiVersion": "v1",
+    "kind": "PersistentVolume",
+    "metadata": {
+        "namespace": "$K8NAMESPACE",
+        "name": "pv-registry",
+        "labels": {
+            "name": "pv-registry"
+        }
+    },
+    "spec": {
+        "capacity": {
+            "storage": "50Gi"
+        },
+        "volumeMode": "Filesystem",
+        "accessModes": [
+            "ReadWriteOnce"
+        ],
+        "persistentVolumeReclaimPolicy": "Recycle",
+        "storageClassName": "local-storage",
+        "hostPath": {
+            "path": "/data/registry"
+        }
+    }
+}

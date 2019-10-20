@@ -1,0 +1,116 @@
+{
+    "apiVersion": "apps/v1",
+    "kind": "Deployment",
+    "metadata": {
+        "name": "registry",
+        "namespace": "$K8NAMESPACE"
+    },
+    "spec": {
+        "replicas": 1,
+        "selector": {
+            "matchLabels": {
+                "app": "registry"
+            }
+        },
+        "template": {
+            "metadata": {
+                "labels": {
+                    "app": "registry"
+                }
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "name": "registry",
+                        "image": "registry:2",
+                        "resources": {
+                            "limits": {
+                                "cpu": "100m",
+                                "memory": "100Mi"
+                            },
+                            "requests": {
+                                "cpu": "100m",
+                                "memory": "100Mi"
+                            }
+                        },
+                        "env": [
+                            {
+                                "name": "REGISTRY_HTTP_ADDR",
+                                "value": ":5000"
+                            },
+                            {
+                                "name": "UNSECURE_REGISTRY_HTTP_TLS_CERTIFICATE",
+                                "value": "/certs/tls.crt"
+                            },
+                            {
+                                "name": "UNSECURE_REGISTRY_HTTP_TLS_KEY",
+                                "value": "/certs/tls.key"
+                            },
+                            {
+                                "name": "UNSECURE_REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY",
+                                "value": "/var/lib/registry"
+                            },
+                            {
+                                "name": "UNSECURE_REGISTRY_HTTP_SECRET",
+                                "value": "$REGISTRY_PASSWORD"
+                            },
+                            {
+                                "name": "UNSECURE_REGISTRY_AUTH",
+                                "value": "htpasswd"
+                            },
+                            {
+                                "name": "UNSECURE_REGISTRY_AUTH_HTPASSWD_REALM",
+                                "value": "basic-realm"
+                            },
+                            {
+                                "name": "UNSECURE_REGISTRY_AUTH_HTPASSWD_PATH",
+                                "value": "/auth/htpasswd"
+                            }
+                        ],
+                        "volumeMounts": [
+                            {
+                                "name": "image-store",
+                                "mountPath": "/var/lib/registry"
+                            },
+                            {
+                                "name": "auth-dir",
+                                "mountPath": "/auth"
+                            },
+                            {
+                                "name": "registry-tls-data",
+                                "mountPath": "/certs"
+                            }
+                        ],
+                        "ports": [
+                            {
+                                "containerPort": 5000,
+                                "name": "registry",
+                                "protocol": "TCP"
+                            }
+                        ]
+                    }
+                ],
+                "volumes": [
+                    {
+                        "name": "image-store",
+                        "persistentVolumeClaim": {
+                            "claimName": "pvc-registry"
+                        }
+                    },
+                    {
+                        "name": "auth-dir",
+                        "secret": {
+                            "secretName": "registry-auth-data"
+                        }
+                    },
+                    {
+                        "name": "registry-tls-data",
+                        "secret": {
+                            "secretName": "registry-tls-data"
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}

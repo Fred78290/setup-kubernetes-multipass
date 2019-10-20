@@ -1,0 +1,43 @@
+{
+    "apiVersion": "networking.k8s.io/v1beta1",
+    "kind": "Ingress",
+    "metadata": {
+        "name": "$REGISTRY_NAME-server-ingress",
+        "namespace": "$K8NAMESPACE",
+        "annotations": {
+            "kubernetes.io/ingress.class": "nginx",
+            "nginx.ingress.kubernetes.io/proxy-body-size": "1024m",
+            "nginx.ingress.kubernetes.io/ssl-redirect": "true",
+            "nginx.ingress.kubernetes.io/use-regex": "true",
+            "nginx.ingress.kubernetes.io/rewrite-target": "$REWRITE_TARGET",
+            "nginx.ingress.kubernetes.io/backend-protocol": "HTTP",
+            "nginx.ingress.kubernetes.io/server-alias": "$REGISTRY_NAME"
+        }
+    },
+    "spec": {
+        "tls": [
+            {
+                "hosts": [
+                    "$REGISTRY_NAME.$DOMAIN_NAME"
+                ],
+                "secretName": "$K8NAMESPACE"
+            }
+        ],
+        "rules": [
+            {
+                "host": "$REGISTRY_NAME.$DOMAIN_NAME",
+                "http": {
+                    "paths": [
+                        {
+                            "path": "/(.*)",
+                            "backend": {
+                                "serviceName": "$REGISTRY_NAME",
+                                "servicePort": 5000
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+}
