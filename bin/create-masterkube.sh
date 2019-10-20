@@ -17,6 +17,7 @@ export SSH_KEY=$(cat ~/.ssh/id_rsa.pub)
 export KUBERNETES_VERSION=$(curl -sSL https://dl.k8s.io/release/stable.txt)
 export KUBERNETES_PASSWORD=$($CURDIR/create-password.sh)
 export KUBECONFIG=$HOME/.kube/config
+export KUBELESS_RELEASE=$(curl -s https://api.github.com/repos/kubeless/kubeless/releases/latest | grep tag_name | cut -d '"' -f 4)
 export TARGET_IMAGE=$HOME/.local/multipass/cache/bionic-k8s-$KUBERNETES_VERSION-amd64.img
 export CNI_VERSION="v0.7.5"
 export MAXTOTALNODES=3
@@ -71,6 +72,10 @@ while true; do
 	--kubernetes-version)
 		KUBERNETES_VERSION="$2"
 		TARGET_IMAGE="$HOME/.local/multipass/cache/bionic-k8s-$KUBERNETES_VERSION-amd64.img"
+		shift 2
+		;;
+	--kubeless-version)
+		KUBELESS_RELEASE="$2"
 		shift 2
 		;;
 	--max-nodes-total)
