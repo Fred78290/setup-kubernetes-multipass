@@ -1,5 +1,5 @@
 {
-    "apiVersion": "extensions/v1beta1",
+    "apiVersion": "apps/v1",
     "kind": "Deployment",
     "metadata": {
         "name": "metrics-server",
@@ -38,7 +38,7 @@
                 "containers": [
                     {
                         "name": "metrics-server",
-                        "image": "k8s.gcr.io/metrics-server-amd64:v0.3.3",
+                        "image": "k8s.gcr.io/metrics-server-amd64:v0.3.6",
                         "imagePullPolicy": "Always",
 						"args": [
 							"--tls-cert-file=/etc/kubelet/kubelet.crt",
