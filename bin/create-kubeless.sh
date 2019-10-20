@@ -2,7 +2,8 @@
 echo "Deploy Kubeless"
 
 CURDIR=$(dirname $0)
-KUBELESS_RELEASE=$(curl -s https://api.github.com/repos/kubeless/kubeless/releases/latest | grep tag_name | cut -d '"' -f 4)
+
+[ -z $KUBELESS_RELEASE ] && KUBELESS_RELEASE=$(curl -s https://api.github.com/repos/kubeless/kubeless/releases/latest | grep tag_name | cut -d '"' -f 4)
 
 pushd $CURDIR/../
 
