@@ -301,9 +301,10 @@ do
     else
         echo "Start kubernetes ${VMNAME} instance worker node"
     
+        multipass exec ${VMNAME} -- sudo /masterkube/bin/join-master.sh
+
         kubectl label nodes ${VMNAME} worker=true --overwrite --kubeconfig=./cluster/config
 
-        multipass exec ${VMNAME} -- sudo /masterkube/bin/join-master.sh
         HOSTS_DEF=$(multipass info ${VMNAME} | grep IPv4 | awk "{print \$2 \"    ${VMNAME}.$DOMAIN_NAME\"}")
     fi
 
