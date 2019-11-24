@@ -76,9 +76,9 @@ curl -L --remote-name-all https://storage.googleapis.com/kubernetes-release/rele
 chmod +x {kubeadm,kubelet,kubectl}
 
 if [ -f /run/systemd/resolve/resolv.conf ]; then
-	echo "KUBELET_EXTRA_ARGS='--resolv-conf=/run/systemd/resolve/resolv.conf --fail-swap-on=false --read-only-port=10255 --feature-gates=VolumeSubpathEnvExpansion=true'" > /etc/default/kubelet
+	echo "KUBELET_EXTRA_ARGS='--resolv-conf=/run/systemd/resolve/resolv.conf --fail-swap-on=false --authentication-token-webhook=true --authorization-mode=Webhook --read-only-port=10255 --feature-gates=VolumeSubpathEnvExpansion=true'" > /etc/default/kubelet
 else
-	echo "KUBELET_EXTRA_ARGS='--fail-swap-on=false --read-only-port=10255 --feature-gates=VolumeSubpathEnvExpansion=true'" > /etc/default/kubelet
+	echo "KUBELET_EXTRA_ARGS='--fail-swap-on=false --authentication-token-webhook=true --authorization-mode=Webhook --read-only-port=10255 --feature-gates=VolumeSubpathEnvExpansion=true'" > /etc/default/kubelet
 fi
 
 curl -sSL "https://raw.githubusercontent.com/kubernetes/kubernetes/${KUBERNETES_VERSION}/build/debs/kubelet.service" | sed "s:/usr/bin:/usr/local/bin:g" > /etc/systemd/system/kubelet.service
