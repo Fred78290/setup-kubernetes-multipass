@@ -11,6 +11,17 @@ if [ -z "$DOMAIN_NAME" ]; then
     export DOMAIN_NAME=$(openssl x509 -noout -subject -in ./etc/ssl/cert.pem | awk -F= '{print $NF}' | sed -e 's/^[ \t]*//' | sed 's/\*\.//g')
 fi
 
+if [ -z $(command -v kubeless) ]; then
+  echo "Install kubeless tool..."
+  pushd /tmp
+  wget -q https://github.com/kubeless/kubeless/releases/download/${KUBELESS_RELEASE}/kubeless_linux-amd64.zip
+  unzip kubeless_linux-amd64.zip
+  sudo mv bundles/kubeless_linux-amd64/kubeless /usr/local/bin/kubeless
+  chmod +x /usr/local/bin/kubeless
+  rm -rf bundles kubeless_linux-amd64.zip
+  popd
+fi
+
 kubectl create ns kubeless --kubeconfig=./cluster/config
 kubectl create secret tls kubeless -n kubeless --key ./etc/ssl/privkey.pem --cert ./etc/ssl/fullchain.pem --kubeconfig=./cluster/config
 kubectl create -f https://github.com/kubeless/kubeless/releases/download/${KUBELESS_RELEASE}/kubeless-${KUBELESS_RELEASE}.yaml --kubeconfig=./cluster/config
