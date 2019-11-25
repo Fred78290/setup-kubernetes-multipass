@@ -1,0 +1,24 @@
+{
+	"apiVersion": "monitoring.coreos.com/v1",
+	"kind": "ServiceMonitor",
+	"metadata": {
+		"name": "helloworld",
+		"namespace": "$K8NAMESPACE",
+		"labels": {
+			"service-monitor": "function"
+		}
+	},
+	"spec": {
+		"selector": {
+			"matchLabels": {
+				"app": "helloworld"
+			}
+		},
+		"endpoints": [
+			{
+				"port": "8080",
+				"interval": "5s"
+			}
+		]
+	}
+}

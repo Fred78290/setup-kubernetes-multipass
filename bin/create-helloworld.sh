@@ -32,5 +32,6 @@ kubectl apply -f $ETC_DIR/$1.json --kubeconfig=./cluster/config
 deploy deployment
 deploy service
 deploy ingress
+deploy hpa
 
-kubectl scale --replicas=10 deploy/helloworld -n $K8NAMESPACE
+#kubectl scale --replicas=10 deploy/helloworld -n $K8NAMESPACE

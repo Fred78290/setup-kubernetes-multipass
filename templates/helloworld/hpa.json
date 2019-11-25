@@ -1,0 +1,30 @@
+{
+    "apiVersion": "autoscaling/v2beta2",
+    "kind": "HorizontalPodAutoscaler",
+    "metadata": {
+        "name": "helloworld-hpa",
+        "namespace": "$K8NAMESPACE"
+    },
+    "spec": {
+        "scaleTargetRef": {
+            "apiVersion": "apps/v1",
+            "kind": "Deployment",
+            "name": "helloworld"
+        },
+        "minReplicas": 1,
+        "maxReplicas": 10,
+        "metrics": [
+            {
+                "type": "Object",
+                "object": {
+                    "target": {
+                        "kind": "Service",
+                        "name": "helloworld"
+                    },
+                    "metricName": "http_requests",
+                    "targetValue": 100
+                }
+            }
+        ]
+    }
+}

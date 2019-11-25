@@ -326,7 +326,7 @@ done
 ./bin/create-kubeless.sh
 ./bin/create-minio.sh
 ./bin/create-ingress-controller.sh
-./bin/create-metric-server.sh
+#./bin/create-metric-server.sh
 ./bin/create-dashboard.sh
 ./bin/create-influxdb.sh
 ./bin/create-helloworld.sh
