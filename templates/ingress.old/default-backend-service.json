@@ -2,10 +2,10 @@
   "apiVersion": "v1",
   "kind": "Service",
   "metadata": {
-      "name": "masterkube-default-http-backend",
+      "name": "default-http-backend",
       "namespace": "$K8NAMESPACE",
       "labels": {
-          "app": "masterkube-default-http-backend"
+          "app": "default-http-backend"
       }
   },
   "spec": {
@@ -16,7 +16,7 @@
           }
       ],
       "selector": {
-          "app": "masterkube-default-http-backend"
+          "app": "default-http-backend"
       }
   }
 }

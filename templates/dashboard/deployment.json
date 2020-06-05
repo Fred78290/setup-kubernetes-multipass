@@ -26,7 +26,7 @@
                 "containers": [
                     {
                         "name": "kubernetes-dashboard",
-                        "image": "kubernetesui/dashboard:v2.0.0-beta5",
+                        "image": "kubernetesui/dashboard:v2.0.0",
                         "imagePullPolicy": "Always",
                         "ports": [
                             {
@@ -36,7 +36,7 @@
                         ],
                         "args": [
                             "--auto-generate-certificates",
-                            "--namespace=$K8NAMESPACE"
+                            "--namespace=kubernetes-dashboard"
                         ],
                         "volumeMounts": [
                             {
@@ -48,24 +48,6 @@
                                 "name": "tmp-volume"
                             }
                         ],
-                        "env": [
-                            {
-                                "name": "POD_NAME",
-                                "valueFrom": {
-                                    "fieldRef": {
-                                        "fieldPath": "metadata.name"
-                                    }
-                                }
-                            },
-                            {
-                                "name": "POD_NAMESPACE",
-                                "valueFrom": {
-                                    "fieldRef": {
-                                        "fieldPath": "metadata.namespace"
-                                    }
-                                }
-                            }
-                        ],
                         "livenessProbe": {
                             "httpGet": {
                                 "scheme": "HTTPS",
@@ -74,6 +56,12 @@
                             },
                             "initialDelaySeconds": 30,
                             "timeoutSeconds": 30
+                        },
+                        "securityContext": {
+                            "allowPrivilegeEscalation": false,
+                            "readOnlyRootFilesystem": true,
+                            "runAsUser": 1001,
+                            "runAsGroup": 2001
                         }
                     }
                 ],
@@ -90,6 +78,9 @@
                     }
                 ],
                 "serviceAccountName": "kubernetes-dashboard",
+                "nodeSelector": {
+                    "kubernetes.io/os": "linux"
+                },
                 "tolerations": [
                     {
                         "key": "node-role.kubernetes.io/master",

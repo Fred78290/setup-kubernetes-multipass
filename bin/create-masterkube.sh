@@ -19,7 +19,7 @@ export KUBERNETES_PASSWORD=$($CURDIR/create-password.sh)
 export KUBECONFIG=$HOME/.kube/config
 export KUBELESS_RELEASE=$(curl -s https://api.github.com/repos/kubeless/kubeless/releases/latest | grep tag_name | cut -d '"' -f 4)
 export TARGET_IMAGE=$HOME/.local/multipass/cache/bionic-k8s-$KUBERNETES_VERSION-amd64.img
-export CNI_VERSION="v0.7.5"
+export CNI_VERSION="v0.8.5"
 export MAXTOTALNODES=3
 export OSDISTRO=$(uname -s)
 export PACKAGE_UPGRADE="false"
@@ -208,6 +208,7 @@ if [ "$LAUNCH_IMAGE_URL" == "bionic" ]; then
         "packages": [
             "jq",
             "socat",
+            "conntrack",
             "nfs-common"
         ],
         "runcmd": [
@@ -280,7 +281,7 @@ do
         multipass exec ${VMNAME} -- sudo /bin/bash -c /usr/local/bin/kubeimage
     fi
 
-    multipass exec ${VMNAME} -- sudo usermod -aG docker multipass
+    multipass exec ${VMNAME} -- sudo usermod -aG docker ubuntu
     multipass exec ${VMNAME} -- sudo usermod -aG docker kubernetes
 
     if [ $INDEX -eq 0 ]; then
@@ -326,7 +327,7 @@ done
 ./bin/create-kubeless.sh
 ./bin/create-minio.sh
 ./bin/create-ingress-controller.sh
-#./bin/create-metric-server.sh
+./bin/create-metric-server.sh
 ./bin/create-dashboard.sh
 ./bin/create-influxdb.sh
 ./bin/create-helloworld.sh

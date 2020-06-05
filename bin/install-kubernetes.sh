@@ -1,46 +1,8 @@
 #!/bin/bash
 KUBERNETES_VERSION=$1
-CNI_VERSION=$2
+CNI_VERSION="v0.8.5"
 
-if [ "x$KUBERNETES_VERSION" == "x" ]; then
-    echo "Missing KUBERNETES_VERSION"
-	KUBERNETES_VERSION="$(curl -sSL https://dl.k8s.io/release/stable.txt)"
-fi
-
-if [ "x$CNI_VERSION" == "x" ]; then
-    echo "Missing CNI_VERSION"
-	CNI_VERSION="v0.7.5"
-fi
-
-KUBERNETES_MINOR_RELEASE=$(echo -n $KUBERNETES_VERSION | tr '.' ' ' | awk '{ print $2 }')
-
-# Setup daemon.
-if [ $KUBERNETES_MINOR_RELEASE -ge 14 ]; then
-    mkdir -p /etc/docker
-
-    cat > /etc/docker/daemon.json <<SHELL
-{
-    "exec-opts": [
-        "native.cgroupdriver=systemd"
-    ],
-    "log-driver": "json-file",
-    "log-opts": {
-        "max-size": "100m"
-    },
-    "storage-driver": "overlay2"
-}
-SHELL
-
-    curl https://get.docker.com | bash
-
-    mkdir -p /etc/systemd/system/docker.service.d
-
-    # Restart docker.
-    systemctl daemon-reload
-    systemctl restart docker
-else
-    curl https://get.docker.com | bash
-fi
+curl -s https://get.docker.com | bash
 
 # On lxd container remove overlay mod test
 if [ -f /lib/systemd/system/containerd.service ]; then
@@ -55,35 +17,58 @@ interface "eth0" {
 }
 EOF
 
-# Setup Kube DNS resolver
-mkdir /etc/systemd/resolved.conf.d/
-cat > /etc/systemd/resolved.conf.d/kubernetes.conf <<SHELL
-[Resolve]
-DNS=10.96.0.10
-Domains=cluster.local
-SHELL
+if [ "x$KUBERNETES_VERSION" == "x" ]; then
+	RELEASE="v1.18.2"
+else
+	RELEASE=$KUBERNETES_VERSION
+fi
 
-systemctl restart systemd-resolved.service
-
-echo "Prepare kubernetes version ${KUBERNETES_VERSION} with CNI:${CNI_VERSION}"
+echo "Prepare kubernetes version $RELEASE"
 
 mkdir -p /opt/cni/bin
-curl -L "https://github.com/containernetworking/plugins/releases/download/${CNI_VERSION}/cni-plugins-amd64-${CNI_VERSION}.tgz" | tar -C /opt/cni/bin -xz
+curl -L "https://github.com/containernetworking/plugins/releases/download/${CNI_VERSION}/cni-plugins-linux-amd64-${CNI_VERSION}.tgz" | tar -C /opt/cni/bin -xz
 
 mkdir -p /usr/local/bin
 cd /usr/local/bin
-curl -L --remote-name-all https://storage.googleapis.com/kubernetes-release/release/${KUBERNETES_VERSION}/bin/linux/amd64/{kubeadm,kubelet,kubectl}
+curl -L --remote-name-all https://storage.googleapis.com/kubernetes-release/release/${RELEASE}/bin/linux/amd64/{kubeadm,kubelet,kubectl,kube-proxy}
 chmod +x {kubeadm,kubelet,kubectl}
 
 if [ -f /run/systemd/resolve/resolv.conf ]; then
-	echo "KUBELET_EXTRA_ARGS='--resolv-conf=/run/systemd/resolve/resolv.conf --fail-swap-on=false --authentication-token-webhook=true --authorization-mode=Webhook --read-only-port=10255 --feature-gates=VolumeSubpathEnvExpansion=true'" > /etc/default/kubelet
+	echo "KUBELET_EXTRA_ARGS='--resolv-conf=/run/systemd/resolve/resolv.conf --fail-swap-on=false --read-only-port=10255 --feature-gates=VolumeSubpathEnvExpansion=true'" > /etc/default/kubelet
 else
-	echo "KUBELET_EXTRA_ARGS='--fail-swap-on=false --authentication-token-webhook=true --authorization-mode=Webhook --read-only-port=10255 --feature-gates=VolumeSubpathEnvExpansion=true'" > /etc/default/kubelet
+	echo "KUBELET_EXTRA_ARGS='--fail-swap-on=false --read-only-port=10255 --feature-gates=VolumeSubpathEnvExpansion=true'" > /etc/default/kubelet
 fi
 
-curl -sSL "https://raw.githubusercontent.com/kubernetes/kubernetes/${KUBERNETES_VERSION}/build/debs/kubelet.service" | sed "s:/usr/bin:/usr/local/bin:g" > /etc/systemd/system/kubelet.service
 mkdir -p /etc/systemd/system/kubelet.service.d
-curl -sSL "https://raw.githubusercontent.com/kubernetes/kubernetes/${KUBERNETES_VERSION}/build/debs/10-kubeadm.conf" | sed "s:/usr/bin:/usr/local/bin:g" > /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+
+cat > /etc/systemd/system/kubelet.service <<EOF
+[Unit]
+Description=kubelet: The Kubernetes Node Agent
+Documentation=http://kubernetes.io/docs/
+
+[Service]
+ExecStart=/usr/local/bin/kubelet
+Restart=always
+StartLimitInterval=0
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+cat > /etc/systemd/system/kubelet.service.d/10-kubeadm.conf <<"EOF"
+# Note: This dropin only works with kubeadm and kubelet v1.11+
+[Service]
+Environment="KUBELET_KUBECONFIG_ARGS=--bootstrap-kubeconfig=/etc/kubernetes/bootstrap-kubelet.conf --kubeconfig=/etc/kubernetes/kubelet.conf"
+Environment="KUBELET_CONFIG_ARGS=--config=/var/lib/kubelet/config.yaml"
+# This is a file that "kubeadm init" and "kubeadm join" generate at runtime, populating the KUBELET_KUBEADM_ARGS variable dynamically
+EnvironmentFile=-/var/lib/kubelet/kubeadm-flags.env
+# This is a file that the user can use for overrides of the kubelet args as a last resort. Preferably, the user should use
+# the .NodeRegistration.KubeletExtraArgs object in the configuration files instead. KUBELET_EXTRA_ARGS should be sourced from this file.
+EnvironmentFile=-/etc/default/kubelet
+ExecStart=
+ExecStart=/usr/local/bin/kubelet $KUBELET_KUBECONFIG_ARGS $KUBELET_CONFIG_ARGS $KUBELET_KUBEADM_ARGS $KUBELET_EXTRA_ARGS
+EOF
 
 systemctl enable kubelet && systemctl restart kubelet
 
@@ -97,4 +82,4 @@ done
 echo 'export PATH=/opt/cni/bin:$PATH' >> /etc/bash.bashrc
 #echo 'export PATH=/usr/local/bin:/opt/cni/bin:$PATH' >> /etc/profile.d/apps-bin-path.sh
 
-kubeadm config images pull --kubernetes-version=$KUBERNETES_VERSION
+kubeadm config images pull --kubernetes-version=$RELEASE

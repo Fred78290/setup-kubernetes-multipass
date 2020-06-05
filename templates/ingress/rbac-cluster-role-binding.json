@@ -2,17 +2,17 @@
     "apiVersion": "rbac.authorization.k8s.io/v1",
     "kind": "ClusterRoleBinding",
     "metadata": {
-        "name": "nginx-ingress-clusterrole-nisa-binding"
+        "name": "masterkube-nginx-ingress-clusterrole-nisa-binding"
     },
     "roleRef": {
         "apiGroup": "rbac.authorization.k8s.io",
         "kind": "ClusterRole",
-        "name": "nginx-ingress-clusterrole"
+        "name": "masterkube-nginx-ingress-clusterrole"
     },
     "subjects": [
         {
             "kind": "ServiceAccount",
-            "name": "nginx-ingress-serviceaccount",
+            "name": "masterkube-nginx-ingress-serviceaccount",
             "namespace": "$K8NAMESPACE"
         }
     ]

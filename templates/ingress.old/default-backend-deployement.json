@@ -2,7 +2,7 @@
     "apiVersion": "apps/v1",
     "kind": "Deployment",
     "metadata": {
-        "name": "masterkube-default-http-backend",
+        "name": "default-http-backend",
         "labels": {
             "app": "default-http-backend"
         },
@@ -12,13 +12,13 @@
         "replicas": 1,
         "selector": {
             "matchLabels": {
-                "app": "masterkube-default-http-backend"
+                "app": "default-http-backend"
             }
         },
         "template": {
             "metadata": {
                 "labels": {
-                    "app": "masterkube-default-http-backend"
+                    "app": "default-http-backend"
                 }
             },
             "spec": {
@@ -28,7 +28,7 @@
                 "terminationGracePeriodSeconds": 60,
                 "containers": [
                     {
-                        "name": "masterkube-default-http-backend",
+                        "name": "default-http-backend",
                         "image": "gcr.io/google_containers/defaultbackend:1.4",
                         "livenessProbe": {
                             "httpGet": {

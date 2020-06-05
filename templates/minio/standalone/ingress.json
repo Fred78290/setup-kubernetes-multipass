@@ -1,5 +1,5 @@
 {
-    "apiVersion": "networking.k8s.io/v1",
+    "apiVersion": "extensions/v1beta1",
     "kind": "Ingress",
     "metadata": {
         "name": "master-$CLUSTER_NAME-minio-server-ingress",
@@ -13,6 +13,7 @@
         }
     },
     "spec": {
+        "ingressClassName": "nginx",
         "tls": [
             {
                 "hosts": [

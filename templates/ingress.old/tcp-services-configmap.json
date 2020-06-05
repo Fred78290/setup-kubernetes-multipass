@@ -2,7 +2,7 @@
     "kind": "ConfigMap",
     "apiVersion": "v1",
     "metadata": {
-        "name": "masterkube-tcp-services",
+        "name": "tcp-services",
         "namespace": "$K8NAMESPACE"
     }
 }

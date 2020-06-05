@@ -11,7 +11,7 @@
 KUBERNETES_VERSION=$(curl -sSL https://dl.k8s.io/release/stable.txt)
 KUBERNETES_PASSWORD=$(uuidgen)
 TARGET_IMAGE=$HOME/.local/multipass/cache/bionic-k8s-$KUBERNETES_VERSION-amd64.img
-CNI_VERSION=v0.7.5
+CNI_VERSION=v0.8.5
 CACHE=~/.local/multipass/cache
 TEMP=$(getopt -o i:k:n:p:v: --long custom-image:,ssh-key:,cni-version:,password:,kubernetes-version: -n "$0" -- "$@")
 eval set -- "$TEMP"
@@ -68,7 +68,7 @@ KUBERNETES_MINOR_RELEASE=$(echo -n $KUBERNETES_VERSION | tr '.' ' ' | awk '{ pri
 cat > $INIT_SCRIPT <<EOF
 #/bin/bash
 
-echo "nameserver $NAMESERVER" > /etc/resolv.conf 
+echo "nameserver $NAMESERVER" > /etc/resolv.conf
 echo "search $DOMAINNAME" >> /etc/resolv.conf 
 
 export DEBIAN_FRONTEND=noninteractive
@@ -76,7 +76,7 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get update
 apt-get upgrade -y
 apt-get dist-upgrade -y
-apt-get install jq socat nfs-common -y
+apt-get install jq socat conntrack -y
 
 apt-get autoremove -y
 
@@ -109,28 +109,74 @@ else
 fi
 
 # Setup Kube DNS resolver
-mkdir /etc/systemd/resolved.conf.d/
-cat > /etc/systemd/resolved.conf.d/kubernetes.conf <<SHELL
-[Resolve]
-DNS=10.96.0.10
-Domains=cluster.local
-SHELL
+#mkdir -p /etc/systemd
+#cat > /etc/systemd/resolved.conf <<SHELL
+#  This file is part of systemd.
+#
+#  systemd is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as published by
+#  the Free Software Foundation; either version 2.1 of the License, or
+#  (at your option) any later version.
+#
+# Entries in this file show the compile time defaults.
+# You can change settings by editing this file.
+# Defaults can be restored by simply deleting this file.
+#
+# See resolved.conf(5) for details
+
+#[Resolve]
+#DNS=10.96.0.10
+#FallbackDNS=
+#Domains=~cluster.local
+#LLMNR=no
+#MulticastDNS=no
+#DNSSEC=no
+#Cache=yes
+#DNSStubListener=yes
+#SHELL
 
 mkdir -p /opt/cni/bin
-curl -L "https://github.com/containernetworking/plugins/releases/download/${CNI_VERSION}/cni-plugins-amd64-${CNI_VERSION}.tgz" | tar -C /opt/cni/bin -xz
+curl -L "https://github.com/containernetworking/plugins/releases/download/${CNI_VERSION}/cni-plugins-linux-amd64-${CNI_VERSION}.tgz" | tar -C /opt/cni/bin -xz
 
 sed -i 's/PasswordAuthentication/#PasswordAuthentication/g' /etc/ssh/sshd_config 
 
 mkdir -p /usr/local/bin
 cd /usr/local/bin
-curl -L --remote-name-all https://storage.googleapis.com/kubernetes-release/release/${KUBERNETES_VERSION}/bin/linux/amd64/{kubeadm,kubelet,kubectl}
+curl -L --remote-name-all https://storage.googleapis.com/kubernetes-release/release/${KUBERNETES_VERSION}/bin/linux/amd64/{kubeadm,kubelet,kubectl,kube-proxy}
 chmod +x /usr/local/bin/kube*
 
-curl -sSL "https://raw.githubusercontent.com/kubernetes/kubernetes/${KUBERNETES_VERSION}/build/debs/kubelet.service" | sed "s:/usr/bin:/usr/local/bin:g" > /etc/systemd/system/kubelet.service
 mkdir -p /etc/systemd/system/kubelet.service.d
-curl -sSL "https://raw.githubusercontent.com/kubernetes/kubernetes/${KUBERNETES_VERSION}/build/debs/10-kubeadm.conf" | sed "s:/usr/bin:/usr/local/bin:g" > /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 
 echo "KUBELET_EXTRA_ARGS='--fail-swap-on=false --read-only-port=10255 --feature-gates=VolumeSubpathEnvExpansion=true'" > /etc/default/kubelet
+
+cat > /etc/systemd/system/kubelet.service <<SHELL
+[Unit]
+Description=kubelet: The Kubernetes Node Agent
+Documentation=http://kubernetes.io/docs/
+
+[Service]
+ExecStart=/usr/local/bin/kubelet
+Restart=always
+StartLimitInterval=0
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+SHELL
+
+cat > /etc/systemd/system/kubelet.service.d/10-kubeadm.conf <<"SHELL"
+# Note: This dropin only works with kubeadm and kubelet v1.11+
+[Service]
+Environment="KUBELET_KUBECONFIG_ARGS=--bootstrap-kubeconfig=/etc/kubernetes/bootstrap-kubelet.conf --kubeconfig=/etc/kubernetes/kubelet.conf"
+Environment="KUBELET_CONFIG_ARGS=--config=/var/lib/kubelet/config.yaml"
+# This is a file that "kubeadm init" and "kubeadm join" generate at runtime, populating the KUBELET_KUBEADM_ARGS variable dynamically
+EnvironmentFile=-/var/lib/kubelet/kubeadm-flags.env
+# This is a file that the user can use for overrides of the kubelet args as a last resort. Preferably, the user should use
+# the .NodeRegistration.KubeletExtraArgs object in the configuration files instead. KUBELET_EXTRA_ARGS should be sourced from this file.
+EnvironmentFile=-/etc/default/kubelet
+ExecStart=
+ExecStart=/usr/local/bin/kubelet \$KUBELET_KUBECONFIG_ARGS \$KUBELET_CONFIG_ARGS \$KUBELET_KUBEADM_ARGS \$KUBELET_EXTRA_ARGS
+SHELL
 
 systemctl enable kubelet
 
@@ -196,6 +242,6 @@ cp $CACHE/bionic-server-cloudimg-amd64.img $TARGET_IMAGE
 qemu-img resize $TARGET_IMAGE 5G
 sudo virt-sysprep --network -a $TARGET_IMAGE --timezone Europe/Paris --root-password password:$KUBERNETES_PASSWORD --copy-in $INIT_SCRIPT:/tmp --run-command $INIT_SCRIPT
 
-rm /tmp/prepare-k8s-bionic.sh
+#rm /tmp/prepare-k8s-bionic.sh
 
 echo "Created image $TARGET_IMAGE with kubernetes version $KUBERNETES_VERSION"
